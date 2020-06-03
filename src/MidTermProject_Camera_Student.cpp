@@ -62,7 +62,7 @@ int main(int argc, const char *argv[])
         // push image into data frame buffer
         DataFrame frame;
         frame.cameraImg = imgGray;
-        dataBuffer.insert(dataBuffer.end(), frame);
+        dataBuffer.push_back(frame);
         if (dataBuffer.size() > dataBufferSize)
             dataBuffer.erase(dataBuffer.begin())
 

@@ -102,7 +102,7 @@ void detKeypointsShiTomasi(vector<cv::KeyPoint> &keypoints, cv::Mat &img, bool b
     }
 }
 
-void detKeypointsHarris(std::vector<cv::KeyPoint> &keypoints, cv::Mat &img, bool bVis)
+void detKeypointsHarris(vector<cv::KeyPoint> &keypoints, cv::Mat &img, bool bVis)
 {
     int blockSize = 2;
     int apertureSize = 3;
@@ -162,6 +162,73 @@ void detKeypointsHarris(std::vector<cv::KeyPoint> &keypoints, cv::Mat &img, bool
         cv::Mat visImage = img.clone();
         cv::drawKeypoints(img, keypoints, visImage, cv::Scalar::all(-1), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
         string windowName = "Harris Corner Detector Results";
+        cv::namedWindow(windowName, 6);
+        imshow(windowName, visImage);
+        cv::waitKey(0);
+    }
+}
+
+void detKeypointsModern(vector<cv::KeyPoint> &keypoints, cv::Mat &img, std::string detectorType, bool bVis)
+{
+    cv::Ptr<cv::FeatureDetector> detector;
+    if (detectorType.compare("FAST") == 0)
+    {
+        int threshold = 30;
+        bool nonmaxSuppression = true;
+        cv::FastFeatureDetector::DetectorType type = cv::FastFeatureDetector::TYPE_9_16;
+        detector = cv::FastFeatureDetector::create(threshold, nonmaxSuppression, type);
+    }
+    else if (detectorType.compare("BRISK") == 0)
+    {
+        int threshold = 30;
+        int octaves = 3;
+        float patternScale = 1.0;
+        detector = cv::BRISK::create(threshold, octaves, patternScale);
+    }
+    else if (detectorType.compare("ORB") == 0)
+    {
+        int nfeatures = 500;
+        float scaleFactor = 1.2;
+        int nlevels = 8;
+        int edgeThreshold = 31;
+        int firstLevel = 0;
+        int WTA_K = 2;
+        cv::ORB::ScoreType scoreType = cv::ORB::HARRIS_SCORE;
+        int patchSize = 31;
+        detector = cv::ORB::create(nfeatures, scaleFactor, nlevels, edgeThreshold, firstLevel, WTA_K, scoreType, patchSize);
+    }
+    else if (detectorType.compare("AKAZE") == 0)
+    {
+        cv::AKAZE::DescriptorType type = cv::AKAZE::DESCRIPTOR_MLDB;
+        int descriptorSize = 0;
+        int descriptorChannels = 3;
+        float threshold = 0.001f;
+        int nOctaves = 4;
+        int nOctaveLayers = 4;
+        cv::KAZE::DiffusivityType diffusivity = cv::KAZE::DIFF_PM_G2;
+        detector = cv::AKAZE::create(type, descriptorSize, descriptorChannels, threshold, nOctaves, nOctaveLayers, diffusivity);
+    }
+    else if (detectorType.compare("SIFT") == 0)
+    {
+        detector = cv::xfeatures2d::SIFT::create();
+    }
+    else
+    {
+        cout << "ERROR: Unrecognized detector type: " << detectorType << endl;
+        throw std::runtime_error("Unrecognized detector type: " + detectorType);
+    }
+
+    double t = (double)cv::getTickCount();
+    detector->detect(img, keypoints);
+    t = ((double)cv::getTickCount() - t) / cv::getTickFrequency();
+    
+    cout << detectorType << " with n = " << keypoints.size() << " keypoints in " << 1000 * t / 1.0 << " ms" << endl;
+    
+    if (bVis)
+    {
+        cv::Mat visImage = img.clone();
+        cv::drawKeypoints(img, keypoints, visImage, cv::Scalar::all(-1), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
+        string windowName = detectorType + " Detector Results";
         cv::namedWindow(windowName, 6);
         imshow(windowName, visImage);
         cv::waitKey(0);

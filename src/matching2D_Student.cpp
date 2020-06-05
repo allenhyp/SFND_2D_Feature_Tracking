@@ -19,7 +19,7 @@ void matchDescriptors(std::vector<cv::KeyPoint> &kPtsSource, std::vector<cv::Key
     else if (matcherType.compare("MAT_FLANN") == 0)
     {
         // OpenCV bug workaround : convert binary descriptor to floating point due to a bug in current OpenCV implementation
-        if (descSource.type() != CV_32F)
+        if (descSource.type() || descRef.type() != CV_32F)
         {
             descSource.convertTo(descSource, CV_32F);
             descRef.convertTo(descRef, CV_32F);

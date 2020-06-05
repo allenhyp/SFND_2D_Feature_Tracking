@@ -60,6 +60,7 @@ int main(int argc, const char *argv[])
         // record for report
         double detectTime = 0.0;
         double extractTime = 0.0;
+        double totalDetectionTime = 0.0;
         double totalDetAndExtTime = 0.0;
         int keypointNumberDetected = 0;
         int totalKeypointDetected = 0;
@@ -114,17 +115,13 @@ int main(int argc, const char *argv[])
             {
                 detectTime = detKeypointsModern(keypoints, imgGray, detectorType, bVis);
             }
-
-            // outputFileStream << detectorType << " # of keypoints = " << keypoints.size() << ", time = " << detectTime << endl;
-            totalDetAndExtTime += detectTime;
-            totalKeypointDetected += keypoints.size();
             //// EOF STUDENT ASSIGNMENT
 
             //// STUDENT ASSIGNMENT
             //// TASK MP.3 -> only keep keypoints on the preceding vehicle
 
             // only keep keypoints on the preceding vehicle
-            bool bFocusOnVehicle = false;
+            bool bFocusOnVehicle = true;
             cv::Rect vehicleRect(535, 180, 180, 150);
             if (bFocusOnVehicle)
             {
@@ -137,6 +134,11 @@ int main(int argc, const char *argv[])
 
                 keypoints = kptsFiltered;
             }
+
+            // outputFileStream << detectorType << " # of keypoints = " << keypoints.size() << ", time = " << detectTime << endl;
+            totalDetectionTime += detectTime;
+            totalDetAndExtTime += detectTime;
+            totalKeypointDetected += keypoints.size();
 
             //// EOF STUDENT ASSIGNMENT
 
@@ -216,8 +218,9 @@ int main(int argc, const char *argv[])
                 }
             }
         } // eof loop over all images
-
-        outputFileStream << "[" << detectorType << ", " << descriptorType << "] average match # = " << totalMatches / 9.0 << ", average time = " << totalDetAndExtTime / 10.0 << endl;
+        // outputFileStream << "[" << detectorType << "] average keypoints detected on the previous vehicle = " << totalKeypointDetected / 10 
+        //     << ", average time = " << totalDetectionTime / 10.0 << endl;
+        outputFileStream << "[" << detectorType << ", " << descriptorType << "] average match # = " << totalMatches / 9.0 << ", average time = " << totalDetAndExtTime / 10.0 << ", score = " << totalMatches / totalDetAndExtTime << endl;
     }
 
     return 0;
